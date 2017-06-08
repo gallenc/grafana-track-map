@@ -58,8 +58,7 @@ export class ClockCtrl extends MetricsPanelCtrl {
       var polyline = []
       var lastLineHasData = false
       for(var i = 0; i < data[0].datapoints.length; i++) {
-        // const position = data[1].datapoints[i][0] ? Geohash.decode(data[1].datapoints[i][0]) : null
-    	const position = data[1].datapoints[i][0] ? SimpleLatLong.position( data[0].datapoints[i][0], data[1].datapoints[i][0] ) : null
+        const position = data[1].datapoints[i][0] ? Geohash.decode(data[1].datapoints[i][0]) : null
         if(position) {
           minLat = Math.min(minLat, position.lat)
           minLon = Math.min(minLon, position.lng)
@@ -170,14 +169,6 @@ export class ClockCtrl extends MetricsPanelCtrl {
 
 ClockCtrl.templateUrl = 'module.html';
 
-var SimpleLatLong = {};
-
-SimpleLatLong.position = function(lat, lng){
-	return {
-	    lat: Number(lat),
-	    lng: Number(lng)
-	  };
-}
 
 var Geohash = {};
 
