@@ -33,4 +33,5 @@ If the a query is defined which returns values with target names 'latitude', 'lo
 If latitude and longitude are not defined, the returned data will be treated just the same as before - as if it was received from the InfluxDb data source.
 The following image shows a definition for the OpenNMS data source where the collected data is known to contain latitude and longitude values. 
 
-![Image](../blob/master/public_html/img/OpenNMSdataSourceExample.png?raw=true)
+![Image](../blob/master/src/img/OpenNMSdataSourceExample.png)
+
