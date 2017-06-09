@@ -22,3 +22,15 @@ grunt
 ```
 
 The first command installs the needed dependencies, second installs `grunt` build tool and third runs the build.
+
+## OpenNMS Datsource Enhancements
+
+When data is returned from the InfluxDb data source, the plugin expects the first data array entry data[0] to contain the 'value' and the second data[1] to contain a string geohash. Data must be in this order and any other data will be ignored.
+
+This branch allows users to also use the  [OpenNMS Measurements Data Source](https://grafana.com/plugins/opennms-datasource/installation) and possibly other json based data sources. 
+The key difference is that latitude and longitude are indexed as separate long values instead of as a string geohash. 
+If the a query is defined which returns values with target names 'latitude', 'longitude' (and optionally 'value' - although value isn't used in this version), these will be treated as coordinates for drawing a path on the map. 
+If latitude and longitude are not defined, the returned data will be treated just the same as before - as if it was received from the InfluxDb data source.
+The following image shows a definition for the OpenNMS data source where the collected data is known to contain latitude and longitude values. 
+
+![Image](../blob/master/public_html/img/OpenNMSdataSourceExample.png?raw=true)

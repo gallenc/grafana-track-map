@@ -57,9 +57,27 @@ export class ClockCtrl extends MetricsPanelCtrl {
       var polylines = []
       var polyline = []
       var lastLineHasData = false
-      for(var i = 0; i < data[0].datapoints.length; i++) {
-        // const position = data[1].datapoints[i][0] ? Geohash.decode(data[1].datapoints[i][0]) : null
-    	const position = data[1].datapoints[i][0] ? SimpleLatLong.position( data[0].datapoints[i][0], data[1].datapoints[i][0] ) : null
+      
+      // test if raw latitude and longitude and value variables present
+      // if not assume value in position data[0] and geohash in data[1]
+      var latvar=-1;
+      var lonvar=-1;
+      var valvar=0;
+      var useLatLon=false;
+      for (var x = 0; x < data.length; x++){
+    	  if(data[x].target === "latitude") latvar=x;
+    	  if(data[x].target === "longitude") lonvar=x;
+    	  if(data[x].target === "value") valvar=x;
+      }
+      if(latvar!=-1 && lonvar!=-1) useLatLon=true;
+      
+      for(var i = 0; i < data[0].datapoints.length; i++) { 
+    	var position;
+    	if(useLatLon){
+    	   	position = SimpleLatLong.position( data[latvar].datapoints[i][0], data[lonvar].datapoints[i][0] )
+    	} else {
+            position = data[1].datapoints[i][0] ? Geohash.decode(data[1].datapoints[i][0]) : null
+    	}
         if(position) {
           minLat = Math.min(minLat, position.lat)
           minLon = Math.min(minLon, position.lng)
@@ -74,12 +92,21 @@ export class ClockCtrl extends MetricsPanelCtrl {
             lastLineHasData = false
           }
         }
-        coords.push({
-          value: data[0].datapoints[i][0],
-          hash: data[1].datapoints[i][0],
-          position: position,
-          timestamp: data[0].datapoints[i][1]
-        })
+        if(useLatLon){
+            coords.push({
+                value: data[valvar].datapoints[i][0],
+                hash: null,
+                position: position,
+                timestamp: data[0].datapoints[i][1]
+            })
+        } else {
+            coords.push({
+                value: data[0].datapoints[i][0],
+                hash: data[1].datapoints[i][0],
+                position: position,
+                timestamp: data[0].datapoints[i][1]
+            })
+        }
       }
       if(lastLineHasData) {
         polylines.push(polyline)
