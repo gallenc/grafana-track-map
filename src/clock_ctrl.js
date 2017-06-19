@@ -57,7 +57,7 @@ export class ClockCtrl extends MetricsPanelCtrl {
       var polylines = []
       var polyline = []
       var lastLineHasData = false
-      
+
       // test if raw latitude and longitude and value variables present
       // if not assume value in position data[0] and geohash in data[1]
       var latvar=null;
@@ -65,19 +65,19 @@ export class ClockCtrl extends MetricsPanelCtrl {
       var valvar=0;
       var useLatLon=false;
       for (var x = 0; x < data.length; x++){
-    	  if(data[x].target === "latitude") latvar=x;
-    	  if(data[x].target === "longitude") lonvar=x;
-    	  if(data[x].target === "value") valvar=x;
+        if(data[x].target === "latitude") latvar=x;
+        if(data[x].target === "longitude") lonvar=x;
+        if(data[x].target === "value") valvar=x;
       }
       if(latvar!=null && lonvar!=null) useLatLon=true;
-      
+
       for(var i = 0; i < data[0].datapoints.length; i++) { 
-    	var position;
-    	if(useLatLon){
-    	   	position = SimpleLatLong.position( data[latvar].datapoints[i][0], data[lonvar].datapoints[i][0] )
-    	} else {
-            position = data[1].datapoints[i][0] ? Geohash.decode(data[1].datapoints[i][0]) : null
-    	}
+        var position;
+        if(useLatLon){
+          position = SimpleLatLong.position( data[latvar].datapoints[i][0], data[lonvar].datapoints[i][0] )
+        } else {
+          position = data[1].datapoints[i][0] ? Geohash.decode(data[1].datapoints[i][0]) : null
+        }
         if(position) {
           minLat = Math.min(minLat, position.lat)
           minLon = Math.min(minLon, position.lng)
@@ -93,19 +93,19 @@ export class ClockCtrl extends MetricsPanelCtrl {
           }
         }
         if(useLatLon){
-            coords.push({
-                value: data[valvar].datapoints[i][0],
-                hash: null,
-                position: position,
-                timestamp: data[0].datapoints[i][1]
-            })
+          coords.push({
+            value: data[valvar].datapoints[i][0],
+            hash: null,
+            position: position,
+            timestamp: data[0].datapoints[i][1]
+          })
         } else {
-            coords.push({
-                value: data[0].datapoints[i][0],
-                hash: data[1].datapoints[i][0],
-                position: position,
-                timestamp: data[0].datapoints[i][1]
-            })
+          coords.push({
+            value: data[0].datapoints[i][0],
+            hash: data[1].datapoints[i][0],
+            position: position,
+            timestamp: data[0].datapoints[i][1]
+          })
         }
       }
       if(lastLineHasData) {
@@ -117,33 +117,38 @@ export class ClockCtrl extends MetricsPanelCtrl {
       }
       var center = coords.find(point => point.position)
       center = center ? center.position : [0, 0]
+      
+      const MINIMUM_BOUNDARIES=0.0001; // used to handle lines where all points in same position and cannot set boundaries
+      if (maxLat-minLat < MINIMUM_BOUNDARIES ) maxLat = maxLat+MINIMUM_BOUNDARIES;
+      if (maxLon-minLon < MINIMUM_BOUNDARIES ) maxLon = maxLon+MINIMUM_BOUNDARIES;
+      
       myMap = L.map('themap')
       myMap.fitBounds([[minLat, minLon],
-            [maxLat, maxLon]])
-      var CartoDB_PositronNoLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
-        subdomains: 'abcd',
-        maxZoom: 19
-      })
+                       [maxLat, maxLon]])
+                       var CartoDB_PositronNoLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+                         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+                         subdomains: 'abcd',
+                         maxZoom: 19
+                       })
 
-      myMap.on("boxzoomend", function(e) {
-        const coordsInBox = coords.filter(coord =>
-          coord.position && e.boxZoomBounds.contains(L.latLng(coord.position.lat, coord.position.lng)))
-        const minTime = Math.min.apply(Math, coordsInBox.map(coord => coord.timestamp))
-        const maxTime = Math.max.apply(Math, coordsInBox.map(coord => coord.timestamp))
-        console.log(new Date(minTime))
-        console.log(new Date(maxTime))
-        if (isFinite(minTime)  && isFinite(maxTime)) {
-          timeSrv.setTime({
-            from  : moment.utc(minTime),
-            to    : moment.utc(maxTime),
-          })
-        }
-      })
+                       myMap.on("boxzoomend", function(e) {
+                         const coordsInBox = coords.filter(coord =>
+                         coord.position && e.boxZoomBounds.contains(L.latLng(coord.position.lat, coord.position.lng)))
+                         const minTime = Math.min.apply(Math, coordsInBox.map(coord => coord.timestamp))
+                         const maxTime = Math.max.apply(Math, coordsInBox.map(coord => coord.timestamp))
+                         console.log(new Date(minTime))
+                         console.log(new Date(maxTime))
+                         if (isFinite(minTime)  && isFinite(maxTime)) {
+                           timeSrv.setTime({
+                             from  : moment.utc(minTime),
+                             to    : moment.utc(maxTime),
+                           })
+                         }
+                       })
 
-      var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-        maxZoom: 17
-      });
+                       var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                         maxZoom: 17
+                       });
       OpenTopoMap.addTo(myMap)
       var OpenSeaMap = L.tileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {});
 
@@ -200,10 +205,12 @@ ClockCtrl.templateUrl = 'module.html';
 var SimpleLatLong = {};
 
 SimpleLatLong.position = function(lat, lng){
-	return {
-	    lat: Number(lat),
-	    lng: Number(lng)
-	  };
+  if (isNaN(lat) || isNaN(lng)){
+    return null;
+  } else return {
+    lat: Number(lat),
+    lng: Number(lng)
+  };
 }
 
 var Geohash = {};
@@ -217,9 +224,9 @@ Geohash.decode = function(geohash) {
   // now just determine the centre of the cell...
 
   var latMin = bounds.sw.lat,
-    lonMin = bounds.sw.lng;
+  lonMin = bounds.sw.lng;
   var latMax = bounds.ne.lat,
-    lonMax = bounds.ne.lng;
+  lonMax = bounds.ne.lng;
 
   // cell centre
   var lat = (latMin + latMax) / 2;
@@ -242,9 +249,9 @@ Geohash.bounds = function(geohash) {
 
   var evenBit = true;
   var latMin = -90,
-    latMax = 90;
+  latMax = 90;
   var lonMin = -180,
-    lonMax = 180;
+  lonMax = 180;
 
   for(var i = 0; i < geohash.length; i++) {
     var chr = geohash.charAt(i);
@@ -275,14 +282,14 @@ Geohash.bounds = function(geohash) {
   }
 
   var bounds = {
-    sw: {
-      lat: latMin,
-      lng: lonMin
-    },
-    ne: {
-      lat: latMax,
-      lng: lonMax
-    },
+      sw: {
+        lat: latMin,
+        lng: lonMin
+      },
+      ne: {
+        lat: latMax,
+        lng: lonMax
+      },
   };
 
   return bounds;
