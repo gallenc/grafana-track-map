@@ -60,8 +60,8 @@ export class ClockCtrl extends MetricsPanelCtrl {
       
       // test if raw latitude and longitude and value variables present
       // if not assume value in position data[0] and geohash in data[1]
-      var latvar=-1;
-      var lonvar=-1;
+      var latvar=null;
+      var lonvar=null;
       var valvar=0;
       var useLatLon=false;
       for (var x = 0; x < data.length; x++){
@@ -69,7 +69,7 @@ export class ClockCtrl extends MetricsPanelCtrl {
     	  if(data[x].target === "longitude") lonvar=x;
     	  if(data[x].target === "value") valvar=x;
       }
-      if(latvar!=-1 && lonvar!=-1) useLatLon=true;
+      if(latvar!=null && lonvar!=null) useLatLon=true;
       
       for(var i = 0; i < data[0].datapoints.length; i++) { 
     	var position;

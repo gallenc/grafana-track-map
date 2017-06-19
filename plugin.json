@@ -13,7 +13,7 @@
       {"name": "Project site", "url": "https://github.com/tkurki/grafana-track-map"},
       {"name": "MIT License", "url": "https://github.com/tkurki/grafana-track-map/blob/master/LICENSE"}
     ],
-    "version": "0.0.1"
+    "version": "0.0.1 OpenNMS"
   },
 
   "dependencies": {
